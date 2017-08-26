@@ -1,46 +1,77 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define TRUE 1
 #define FALSE 0
+#define MAX 250
 
 struct node {
     char data;
     int weight;
     int end_of_key;
-    struct *node left;
-    struct *node equal;
-    struct *node right;
+    struct node *left;
+    struct node *equal;
+    struct node *right;
 
 };
+
 struct node *insert(struct node *pNode, char *word, int weight);
 void traverse(struct node* pNode, char *buffer, int depth);
 void find_and_traverse(struct node *pNode, char *prefix);
 
 int
 main(int argc, char *argv[]){
+    struct node *pNode = NULL;
+    char *word;
+    int weight;
+    int i = 0;
 
-     
+    word = malloc((MAX+1)*(sizeof(char)));
+
+    if(word == NULL){
+        printf("Malloc Failure!\n");
+        exit(EXIT_FAILURE);
+
+    }
+
+
+    /* seg fault in the while loop, gets cut off by
+    the terminal while running */
+    while(scanf("%d;%250s[^\n]", &weight, word) != EOF){
+        pNode = insert(pNode, word, weight);
+
+         if(i = 93826){
+             printf("weight = %d, word = %s\n", weight, *word);
+         }
+        i++;
+    }
 
 
 
 
+    find_and_traverse(pNode, "Chi");
 
     return 0;
 }
 
 
 /* Function that creates a new node and returns a pointer to that new node */
-
 struct node
-*new_node(char word){
+*new_node(char *word){
     struct node *new;
 
     new = malloc(sizeof(struct node));
+
+    if(new == NULL){
+        printf("Malloc Failure!\n");
+        exit(EXIT_FAILURE);
+
+    }
     new->left = NULL;
     new->equal = NULL;
     new->right = NULL;
-    new->data = word;
+    new->data = *word;
 
     return new;
 
@@ -56,15 +87,15 @@ on with the next char of the word */
 struct node
 *insert(struct node *pNode, char *word, int weight){
 
-    if(!pNode){
+    if(pNode == NULL){
         pNode = new_node(word);
 
     }
 
-    if(word < pNode->data){
+    if(*word < pNode->data){
         pNode->left = insert(pNode->left, word, weight);
 
-    }else if(word == pNode->data){
+    }else if(*word == pNode->data){
         if((*word+1) == '\0'){
             pNode->end_of_key = TRUE;
             pNode->weight = weight;
@@ -90,22 +121,24 @@ the prefix */
 
 void
 find_and_traverse(struct node *pNode, char *prefix){
+    char *buffer = NULL;
+    printf("check");
 
-    while( *prefix != '\0 ' && pNode != NULL){
+    while(*prefix != '\0' && pNode != NULL){
 
-        if(prefix < pNode->data){
+        if(*prefix < (pNode->data)){
             find_and_traverse(pNode->left, prefix);
             continue;
 
         }
 
-        if(prefix > pNode->right){
+        if(*prefix > pNode->data){
             find_and_traverse(pNode->right, prefix);
             continue;
 
         }
 
-        if(prefix == pNode->equal){
+        if(*prefix == pNode->data){
             find_and_traverse(pNode->equal, prefix+1);
             continue;
 
@@ -113,7 +146,7 @@ find_and_traverse(struct node *pNode, char *prefix){
 
     }
 
-    if(pNode){
+    if(pNode != NULL){
         if(pNode->end_of_key == TRUE){
 
             /* buffer is a placeholder for the prefix, it adds an extra nul
@@ -123,6 +156,7 @@ find_and_traverse(struct node *pNode, char *prefix){
 
         }
 
+
         traverse(pNode, buffer, strlen(prefix));
     }
 
@@ -130,17 +164,20 @@ find_and_traverse(struct node *pNode, char *prefix){
 }
 
 /* This function traverses through the tree for a given prefix
-It looks at the left most node and then adds it to the prefix. If the flag
-is raised, it would be printed out as a word, else it would keep adding.
-It adds 1 char more at each recursion.
-It then traverses further in the order of a word */
+ * It looks at the left most node and then adds it to the prefix. If the flag
+ * is raised, it would be printed out as a word, else it would keep adding.
+ * It adds 1 char more at each recursion.
+ * It then traverses further in the order of a word */
 
 void
-traverse(struct node* pNode, char *buffer, int depth){
+traverse(struct node *pNode, char *buffer, int depth){
 
     /* if pNode is empty that means there are no further words that
     have the prefix */
-    if(!pNode) return;
+    if(pNode == NULL){
+
+        return;
+    }
 
     traverse(pNode->left, buffer, depth);
 
