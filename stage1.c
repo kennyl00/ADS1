@@ -17,9 +17,16 @@ struct node {
 
 
 struct node
-*new_node(char data){
+*new_node(char word){
+    struct node *new;
 
+    new = malloc(sizeof(struct node));
+    new->left = NULL;
+    new->equal = NULL;
+    new->right = NULL;
+    new->data = word;
 
+    return new;
 
 }
 
