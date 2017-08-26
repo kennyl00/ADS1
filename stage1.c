@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #define TRUE 1
 #define FALSE 0
-#define EMPTY '\0'
-
 
 struct node {
     char data;
@@ -14,7 +13,24 @@ struct node {
     struct *node right;
 
 };
+struct node *insert(struct node *pNode, char *word, int weight);
+void traverse(struct node* pNode, char *buffer, int depth);
+void find_and_traverse(struct node *pNode, char *prefix);
 
+int
+main(int argc, char *argv[]){
+
+     
+
+
+
+
+
+    return 0;
+}
+
+
+/* Function that creates a new node and returns a pointer to that new node */
 
 struct node
 *new_node(char word){
@@ -99,8 +115,11 @@ find_and_traverse(struct node *pNode, char *prefix){
 
     if(pNode){
         if(pNode->end_of_key == TRUE){
+
+            /* buffer is a placeholder for the prefix, it adds an extra nul
+            char at the end for the next function*/
             buffer[strlen(prefix)+1] = '\0';
-            printf("%s\n", buffer);
+            printf("%s \n", buffer);
 
         }
 
@@ -110,46 +129,37 @@ find_and_traverse(struct node *pNode, char *prefix){
     return;
 }
 
-/* This function traverses through the tree for a given prefix and a buffer
-that holds a prefix and finds if there is a word that is equivalent to that
-prefix and 1 char more at each recursion. It then prints out every different
-word that exist since it checks for the flags */
+/* This function traverses through the tree for a given prefix
+It looks at the left most node and then adds it to the prefix. If the flag
+is raised, it would be printed out as a word, else it would keep adding.
+It adds 1 char more at each recursion.
+It then traverses further in the order of a word */
 
 void
 traverse(struct node* pNode, char *buffer, int depth){
 
+    /* if pNode is empty that means there are no further words that
+    have the prefix */
     if(!pNode) return;
 
     traverse(pNode->left, buffer, depth);
 
+    /* the nul char that was added before gets replaced by the new char */
     buffer[depth] = pNode->data;
 
     if(pNode->end_of_key == TRUE){
+
+        /* since that new character that was added formed a word a new nul
+        char is added at the end of the buffer placeholder */
         buffer[depth+1] = '\0';
         printf("%s\n", buffer);
 
     }
 
-    /* Depth is basically the next character of the prefix and
-    it would be going down from the tree */
+    /* Depth is the length of the prefix and at each iteration it
+    would add 1 more to check if a word exist at that length */
     traverse(pNode->equal, buffer, depth+1);
-
-
     traverse(pNode->right, buffer, depth);
 
     return;
-}
-
-
-
-int
-main(int argc, char *argv[]){
-
-
-
-
-
-
-
-    return 0;
 }
