@@ -24,34 +24,24 @@ int
 main(int argc, char *argv[]){
     struct node *pNode = NULL;
     char *word;
-    int weight=0;
+    int weight;
 
-    word = malloc(250*sizeof(char));
+    word = malloc(MAX*sizeof(char));
     if(word == NULL){
         printf("MALLOC FAIL\n");
         exit(EXIT_FAILURE);
 
     }
 
-    char string1[25] = "14608512;Shanghai, China";
-    char string2[32] = "13076300;Buenos Aires, Argentina";
-    char string3[22] = "12691836;Mumbai, India";
+    while(scanf("%d;%250[^\n]", &weight, word) != EOF){
+        pNode = insert(pNode, word, weight);
+    }
 
-    word = string1;
-    pNode = insert(pNode, word, weight);
-    word = string2;
-    pNode = insert(pNode, word, weight);
-    word = string3;
-    pNode = insert(pNode, word, weight);
-
-    printf("hello\n");
-
-    find_and_traverse(pNode, "Mum");
+    find_and_traverse(pNode, "Me");
 
     return 0;
 }
 
-/* Function that creates a new node and returns a pointer to that new node */
 struct node
 *new_node(char *word){
     struct node *new;
@@ -66,16 +56,11 @@ struct node
     new->equal = NULL;
     new->right = NULL;
     new->data = *word;
+    new->end_of_key = FALSE;
+    new->weight = 0;
 
     return new;
 }
-
-/* The insert function takes in a pointer to node, a pointer to a word,
-and a weight. If the node is empty create a new node. If the word is less,
-equal or greater than the current word in pNode, then recursively call the
-function to the left, equal or greater. If the word is equal, it also checks
-the next word to see if it's nul, then define whether it's end of key or move
-on with the next char of the word */
 
 struct node
 *insert(struct node *pNode, char *word, int weight){
@@ -89,9 +74,7 @@ struct node
         pNode->left = insert(pNode->left, word, weight);
 
     }else if(*word == pNode->data){
-
         if(*(word+1) == '\0'){
-
             pNode->end_of_key = TRUE;
             pNode->weight = weight;
 
@@ -108,18 +91,12 @@ struct node
     return pNode;
 }
 
-/* The function takes the pointer to a node and a pointer to an input prefix
-if the prefix is not nul nor NULL, then the loop would initiate the
-traversing of the tree to the end of the prefix char. At the end of the prefix
-char, a traverse function is used to print out all the characters that have
-the prefix */
-
 void
 find_and_traverse(struct node *pNode, char *prefix){
-    char *buffer = NULL;
-    char *secondPrefix = prefix;
+    char *buffer = malloc(MAX*sizeof(char));
+    char *secondPrefix = malloc(MAX*sizeof(char));
 
-    buffer = malloc(250*sizeof(char));
+    strcpy(secondPrefix, prefix);
 
     while(*prefix != '\0' && pNode != NULL){
 
@@ -145,10 +122,7 @@ find_and_traverse(struct node *pNode, char *prefix){
 
     if(pNode != NULL){
         if(pNode->end_of_key == TRUE){
-
-            /* buffer is a placeholder for the prefix, it adds an extra nul
-            char at the end for the next function*/
-            buffer[strlen(prefix)] = '\0';
+            buffer[strlen(prefix)+1] = '\0';
             printf("%s", secondPrefix);
             printf("%s\n", buffer);
 
@@ -160,17 +134,9 @@ find_and_traverse(struct node *pNode, char *prefix){
     return;
 }
 
-/* This function traverses through the tree for a given prefix
- * It looks at the left most node and then adds it to the prefix. If the flag
- * is raised, it would be printed out as a word, else it would keep adding.
- * It adds 1 char more at each recursion.
- * It then traverses further in the order of a word */
-
 void
 traverse(struct node *pNode, char *secondPrefix, char *buffer, int depth){
 
-    /* if pNode is empty that means there are no further words that
-    have the prefix */
     if(pNode == NULL){
         return;
 
@@ -178,21 +144,16 @@ traverse(struct node *pNode, char *secondPrefix, char *buffer, int depth){
 
     traverse(pNode->left, secondPrefix, buffer, depth);
 
-    /* the nul char that was added before gets replaced by the new char */
     buffer[depth] = pNode->data;
 
     if(pNode->end_of_key == TRUE){
 
-        /* since that new character that was added formed a word a new nul
-        char is added at the end of the buffer placeholder */
-        buffer[depth] = '\0';
+        buffer[depth+1] = '\0';
         printf("%s", secondPrefix);
         printf("%s\n", buffer);
 
     }
 
-    /* Depth is the length of the prefix and at each iteration it
-    would add 1 more to check if a word exist at that length */
     traverse(pNode->equal, secondPrefix, buffer, depth+1);
     traverse(pNode->right, secondPrefix, buffer, depth);
 
