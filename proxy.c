@@ -37,7 +37,7 @@ main(int argc, char *argv[]){
         pNode = insert(pNode, word, weight);
     }
 
-    find_and_traverse(pNode, "Me");
+    find_and_traverse(pNode, "Melb");
 
     return 0;
 }
@@ -59,6 +59,8 @@ struct node
     new->end_of_key = FALSE;
     new->weight = 0;
 
+
+
     return new;
 }
 
@@ -71,20 +73,21 @@ struct node
     }
 
     if(*word < pNode->data){
-        pNode->left = insert(pNode->left, word, weight);
+        pNode->left= insert(pNode->left, word, weight);
 
     }else if(*word == pNode->data){
         if(*(word+1) == '\0'){
             pNode->end_of_key = TRUE;
             pNode->weight = weight;
 
+
         }else {
-            pNode->equal = insert(pNode->equal, word+1, weight);
+            pNode->equal= insert(pNode->equal, word+1, weight);
 
         }
 
     }else {
-        pNode->right = insert(pNode->equal, word, weight);
+        pNode->right = insert(pNode->right, word, weight);
 
     }
 
@@ -121,8 +124,9 @@ find_and_traverse(struct node *pNode, char *prefix){
     }
 
     if(pNode != NULL){
-        if(pNode->end_of_key == TRUE){
+        if(pNode->end_of_key == 1){
             buffer[strlen(prefix)+1] = '\0';
+
             printf("%s", secondPrefix);
             printf("%s\n", buffer);
 
