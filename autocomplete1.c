@@ -22,27 +22,19 @@ void find_and_traverse(struct node *pNode, char *prefix, FILE *ofp);
 
 int
 main(int argc, char *argv[]){
-    struct node *pNode = NULL;
-    char *word;
-    char *prefix;
-    int weight;
 
-    word = malloc(MAX*sizeof(char));
-    prefix = malloc(MAX*sizeof(char));
-    if(word == NULL || prefix == NULL){
-        printf("MALLOC FAILURE\n");
-        exit(EXIT_FAILURE);
-
-    }
-
-/* argv[1] == datafile / argv[2] == outputfile / argv[3] == prefix */
-
-    char *datafile;
-    char *outputfile;
-
+/* Checking if the datafile, outputfile and prefix is not NULL */
+    char *datafile, *outputfile, *prefix;
+    prefix = argv[3];
     outputfile = argv[2];
     datafile = argv[1];
 
+    if(prefix == NULL || outputfile == NULL || datafile == NULL){
+        printf("STDIN FAIL\n");
+        exit(EXIT_FAILURE);
+    }
+
+/* Opening datafile and output file to read and write */
     FILE *ifp, *ofp;
 
     ifp = fopen(datafile, "r");
@@ -57,22 +49,35 @@ main(int argc, char *argv[]){
         exit(1);
     }
 
+/* Creating a space for words that form the ternary tree */
+    char *word;
+    word = malloc(MAX*sizeof(char));
+    if(word == NULL){
+        printf("MALLOC FAILURE\n");
+        exit(EXIT_FAILURE);
+
+    }
+
+/* Reading the file into a ternary tree */
+    struct node *pNode = NULL;
+    int weight;
+
     while(fscanf(ifp, "%d;%250[^\n]", &weight, word) != EOF){
         pNode = insert(pNode, word, weight);
 
     }
 
-
-    find_and_traverse(pNode, argv[3], ofp);
+/* Writing the results to the output file */
+    fprintf(ofp, "Prefix:  %s\n", prefix);
+    find_and_traverse(pNode, prefix, ofp);
 
     fclose(ifp);
     fclose(ofp);
 
-
     return 0;
 }
 
-/* Function that creates a new node and returns a pointer to that new node */
+/* Creating a new node while initialising its variables */
 struct node
 *new_node(char *word){
     struct node *new;
@@ -93,13 +98,8 @@ struct node
     return new;
 }
 
-/* The insert function takes in a pointer to node, a pointer to a word,
-and a weight. If the node is empty create a new node. If the word is less,
-equal or greater than the current word in pNode, then recursively call the
-function to the left, equal or greater. If the word is equal, it also checks
-the next word to see if it's nul, then define whether it's end of key or move
-on with the next char of the word */
-
+/* Creating a ternary tree by moving each character left, right or down
+depending on its value */
 struct node
 *insert(struct node *pNode, char *word, int weight){
 
@@ -130,12 +130,8 @@ struct node
     return pNode;
 }
 
-/* The function takes the pointer to a node and a pointer to an input prefix
-if the prefix is not nul nor NULL, then the loop would initiate the
-traversing of the tree to the end of the prefix char. At the end of the prefix
-char, a traverse function is used to print out all the characters that have
-the prefix */
-
+/* Finding the end of the prefix. If the key is true, it's a
+word and it gets printed out */
 void
 find_and_traverse(struct node *pNode, char *prefix, FILE *ofp){
     char *buffer = NULL;
@@ -176,7 +172,7 @@ find_and_traverse(struct node *pNode, char *prefix, FILE *ofp){
             /* buffer is a placeholder for the prefix, it adds an extra nul
             char at the end for the next function*/
             buffer[strlen(prefix)] = '\0';
-            fprintf(ofp, "%s", secondPrefix);
+            fprintf(ofp, "key:  %s", secondPrefix);
             fprintf(ofp, "%s\n", buffer);
 
         }
@@ -187,17 +183,11 @@ find_and_traverse(struct node *pNode, char *prefix, FILE *ofp){
     return;
 }
 
-/* This function traverses through the tree for a given prefix
- * It looks at the left most node and then adds it to the prefix. If the flag
- * is raised, it would be printed out as a word, else it would keep adding.
- * It adds 1 char more at each recursion.
- * It then traverses further in the order of a word */
-
+/* Moves through the tree and collects the characters that are
+after the prefix */
 void
 traverse(struct node *pNode, char *secondPrefix, char *buffer, int depth, FILE *ofp){
 
-    /* if pNode is empty that means there are no further words that
-    have the prefix */
     if(pNode == NULL){
         return;
 
@@ -213,13 +203,11 @@ traverse(struct node *pNode, char *secondPrefix, char *buffer, int depth, FILE *
         /* since that new character that was added formed a word a new nul
         char is added at the end of the buffer placeholder */
         buffer[depth] = '\0';
-        fprintf(ofp, "%s", secondPrefix);
+        fprintf(ofp, "key:  %s", secondPrefix);
         fprintf(ofp, "%s\n", buffer);
 
     }
 
-    /* Depth is the length of the prefix and at each iteration it
-    would add 1 more to check if a word exist at that length */
     traverse(pNode->equal, secondPrefix, buffer, depth+1, ofp);
     traverse(pNode->right, secondPrefix, buffer, depth, ofp);
 
