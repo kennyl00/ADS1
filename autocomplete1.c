@@ -17,8 +17,8 @@ struct node {
 };
 
 struct node *insert(struct node *pNode, char *word, int weight);
-void traverse(struct node* pNode, char *prefix, char *buffer, int depth);
-void find_and_traverse(struct node *pNode, char *prefix);
+void traverse(struct node* pNode, char *prefix, char *buffer, int depth, FILE *ofp);
+void find_and_traverse(struct node *pNode, char *prefix, FILE *ofp);
 
 int
 main(int argc, char *argv[]){
@@ -28,27 +28,46 @@ main(int argc, char *argv[]){
     int weight;
 
     word = malloc(MAX*sizeof(char));
-    if(word == NULL){
-        printf("MALLOC FAIL\n");
-        exit(EXIT_FAILURE);
-
-    }
-
     prefix = malloc(MAX*sizeof(char));
-    if(prefix == NULL){
-        printf("MALLOC FAIL\n");
+    if(word == NULL || prefix == NULL){
+        printf("MALLOC FAILURE\n");
         exit(EXIT_FAILURE);
+
     }
 
-    printf("%s\n", argv[0]);
-    printf("%s\n", argv[1]);
-    printf("%s\n", argv[2]);
+/* argv[1] == datafile / argv[2] == outputfile / argv[3] == prefix */
 
-    while(scanf("%d;%250[^\n]", &weight, word) != EOF){
+    char *datafile;
+    char *outputfile;
+
+    outputfile = argv[2];
+    datafile = argv[1];
+
+    FILE *ifp, *ofp;
+
+    ifp = fopen(datafile, "r");
+    if(ifp == NULL){
+        fprintf(stderr, "Can't open input file\n");
+        exit(1);
+    }
+
+    ofp = fopen(outputfile, "w");
+    if(ofp == NULL){
+        fprintf(stderr, "Can't open output file\n");
+        exit(1);
+    }
+
+    while(fscanf(ifp, "%d;%250[^\n]", &weight, word) != EOF){
         pNode = insert(pNode, word, weight);
+
     }
 
-    find_and_traverse(pNode, "Melb");
+
+    find_and_traverse(pNode, argv[3], ofp);
+
+    fclose(ifp);
+    fclose(ofp);
+
 
     return 0;
 }
@@ -60,8 +79,8 @@ struct node
 
     new = malloc(sizeof(struct node));
     if(new == NULL){
-        printf("Malloc Failure!\n");
-        exit(EXIT_FAILURE);
+        printf("MALLOC FAILURE\n");
+        exit(1);
 
     }
     new->left = NULL;
@@ -118,11 +137,16 @@ char, a traverse function is used to print out all the characters that have
 the prefix */
 
 void
-find_and_traverse(struct node *pNode, char *prefix){
+find_and_traverse(struct node *pNode, char *prefix, FILE *ofp){
     char *buffer = NULL;
     char *secondPrefix = prefix;
 
     buffer = malloc(250*sizeof(char));
+    if(buffer == NULL){
+        printf("MALLOC FAILURE\n");
+        exit(EXIT_FAILURE);
+
+    }
 
     while(*prefix != '\0' && pNode != NULL){
 
@@ -152,12 +176,12 @@ find_and_traverse(struct node *pNode, char *prefix){
             /* buffer is a placeholder for the prefix, it adds an extra nul
             char at the end for the next function*/
             buffer[strlen(prefix)] = '\0';
-            printf("%s", secondPrefix);
-            printf("%s\n", buffer);
+            fprintf(ofp, "%s", secondPrefix);
+            fprintf(ofp, "%s\n", buffer);
 
         }
 
-        traverse(pNode, secondPrefix, buffer, strlen(prefix));
+        traverse(pNode, secondPrefix, buffer, strlen(prefix), ofp);
     }
 
     return;
@@ -170,7 +194,7 @@ find_and_traverse(struct node *pNode, char *prefix){
  * It then traverses further in the order of a word */
 
 void
-traverse(struct node *pNode, char *secondPrefix, char *buffer, int depth){
+traverse(struct node *pNode, char *secondPrefix, char *buffer, int depth, FILE *ofp){
 
     /* if pNode is empty that means there are no further words that
     have the prefix */
@@ -179,7 +203,7 @@ traverse(struct node *pNode, char *secondPrefix, char *buffer, int depth){
 
     }
 
-    traverse(pNode->left, secondPrefix, buffer, depth);
+    traverse(pNode->left, secondPrefix, buffer, depth, ofp);
 
     /* the nul char that was added before gets replaced by the new char */
     buffer[depth] = pNode->data;
@@ -189,15 +213,15 @@ traverse(struct node *pNode, char *secondPrefix, char *buffer, int depth){
         /* since that new character that was added formed a word a new nul
         char is added at the end of the buffer placeholder */
         buffer[depth] = '\0';
-        printf("%s", secondPrefix);
-        printf("%s\n", buffer);
+        fprintf(ofp, "%s", secondPrefix);
+        fprintf(ofp, "%s\n", buffer);
 
     }
 
     /* Depth is the length of the prefix and at each iteration it
     would add 1 more to check if a word exist at that length */
-    traverse(pNode->equal, secondPrefix, buffer, depth+1);
-    traverse(pNode->right, secondPrefix, buffer, depth);
+    traverse(pNode->equal, secondPrefix, buffer, depth+1, ofp);
+    traverse(pNode->right, secondPrefix, buffer, depth, ofp);
 
     return;
 }
