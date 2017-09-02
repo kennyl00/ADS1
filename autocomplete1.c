@@ -18,7 +18,7 @@ struct node {
 
 struct node *insert(struct node *pNode, char *word, int weight);
 void traverse(struct node* pNode, char *prefix, char *buffer, int depth, FILE *ofp);
-void find_and_traverse(struct node *pNode, char *prefix, FILE *ofp);
+int find_and_traverse(struct node *pNode, char *prefix, FILE *ofp);
 
 int
 main(int argc, char *argv[]){
@@ -40,13 +40,13 @@ main(int argc, char *argv[]){
     ifp = fopen(datafile, "r");
     if(ifp == NULL){
         fprintf(stderr, "INPUT FILE FAIL\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     ofp = fopen(outputfile, "w");
     if(ofp == NULL){
-        fprintf(stderr, "OOUTPUT FILE FAIL\n");
-        exit(1);
+        fprintf(stderr, "OUTPUT FILE FAIL\n");
+        exit(EXIT_FAILURE);
     }
 
 /* Creating a space for words that form the ternary tree */
@@ -68,11 +68,16 @@ main(int argc, char *argv[]){
     }
 
 /* Writing the results to the output file */
+    int comparisons;
     fprintf(ofp, "Prefix:  %s\n", prefix);
-    find_and_traverse(pNode, prefix, ofp);
+    comparisons = find_and_traverse(pNode, prefix, ofp);
 
     fclose(ifp);
     fclose(ofp);
+
+/* stdout the number of comparisons done to find the key prefix */
+    printf("Prefix:  %s found with %d char comparisons\n", prefix,
+    comparisons);
 
     return 0;
 }
@@ -132,10 +137,11 @@ struct node
 
 /* Finding the end of the prefix. If the key is true, it's a
 word and it gets printed out */
-void
+int
 find_and_traverse(struct node *pNode, char *prefix, FILE *ofp){
     char *buffer = NULL;
     char *secondPrefix = prefix;
+    int comparisons = 0;
 
     buffer = malloc(250*sizeof(char));
     if(buffer == NULL){
@@ -148,12 +154,14 @@ find_and_traverse(struct node *pNode, char *prefix, FILE *ofp){
 
         if(*prefix < (pNode->data)){
             pNode = pNode->left;
+            comparisons ++;
             continue;
 
         }
 
         if(*prefix > pNode->data){
             pNode = pNode->right;
+            comparisons ++;
             continue;
 
         }
@@ -161,9 +169,11 @@ find_and_traverse(struct node *pNode, char *prefix, FILE *ofp){
         if(*prefix == pNode->data){
             pNode = pNode->equal;
             prefix = prefix+1;
+            comparisons ++;
             continue;
 
         }
+
     }
 
     if(pNode != NULL){
@@ -172,23 +182,22 @@ find_and_traverse(struct node *pNode, char *prefix, FILE *ofp){
             /* buffer is a placeholder for the prefix, it adds an extra nul
             char at the end for the next function*/
             buffer[strlen(prefix)+1] = '\0';
-            fprintf(ofp, "key:  %s", secondPrefix);
-            fprintf(ofp, "%s", buffer);
-            fprintf(ofp, " --> ");
-            fprintf(ofp, "weight:  %d\n", pNode->weight);
+            fprintf(ofp, "key:  %s%s --> weight:  %d\n", secondPrefix,
+            buffer, pNode->weight);
 
         }
 
         traverse(pNode, secondPrefix, buffer, strlen(prefix), ofp);
     }
 
-    return;
+    return comparisons;
 }
 
 /* Moves through the tree and collects the characters that are
 after the prefix */
 void
-traverse(struct node *pNode, char *secondPrefix, char *buffer, int depth, FILE *ofp){
+traverse(struct node *pNode, char *secondPrefix, char *buffer, int depth,
+    FILE *ofp){
 
     if(pNode == NULL){
         return;
@@ -205,10 +214,8 @@ traverse(struct node *pNode, char *secondPrefix, char *buffer, int depth, FILE *
         /* since that new character that was added formed a word a new nul
         char is added at the end of the buffer placeholder */
         buffer[depth+1] = '\0';
-        fprintf(ofp, "key:  %s", secondPrefix);
-        fprintf(ofp, "%s", buffer);
-        fprintf(ofp, " --> ");
-        fprintf(ofp, "weight:  %d\n", pNode->weight);
+        fprintf(ofp, "key:  %s%s --> weight:  %d\n", secondPrefix,
+        buffer, pNode->weight);
 
     }
 
