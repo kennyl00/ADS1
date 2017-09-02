@@ -4,7 +4,7 @@
 
 #define TRUE 1
 #define FALSE 0
-#define MAX 250
+#define MAXCHAR 250
 
 struct node {
     char data;
@@ -30,7 +30,7 @@ main(int argc, char *argv[]){
     datafile = argv[1];
 
     if(prefix == NULL || outputfile == NULL || datafile == NULL){
-        printf("STDIN FAIL\n");
+        printf("STDIN FAILURE\n");
         exit(EXIT_FAILURE);
     }
 
@@ -39,19 +39,19 @@ main(int argc, char *argv[]){
 
     ifp = fopen(datafile, "r");
     if(ifp == NULL){
-        fprintf(stderr, "Can't open input file\n");
+        fprintf(stderr, "INPUT FILE FAIL\n");
         exit(1);
     }
 
     ofp = fopen(outputfile, "w");
     if(ofp == NULL){
-        fprintf(stderr, "Can't open output file\n");
+        fprintf(stderr, "OOUTPUT FILE FAIL\n");
         exit(1);
     }
 
 /* Creating a space for words that form the ternary tree */
     char *word;
-    word = malloc(MAX*sizeof(char));
+    word = malloc(MAXCHAR*sizeof(char));
     if(word == NULL){
         printf("MALLOC FAILURE\n");
         exit(EXIT_FAILURE);
@@ -171,9 +171,11 @@ find_and_traverse(struct node *pNode, char *prefix, FILE *ofp){
 
             /* buffer is a placeholder for the prefix, it adds an extra nul
             char at the end for the next function*/
-            buffer[strlen(prefix)] = '\0';
+            buffer[strlen(prefix)+1] = '\0';
             fprintf(ofp, "key:  %s", secondPrefix);
-            fprintf(ofp, "%s\n", buffer);
+            fprintf(ofp, "%s", buffer);
+            fprintf(ofp, " --> ");
+            fprintf(ofp, "weight:  %d\n", pNode->weight);
 
         }
 
@@ -202,9 +204,11 @@ traverse(struct node *pNode, char *secondPrefix, char *buffer, int depth, FILE *
 
         /* since that new character that was added formed a word a new nul
         char is added at the end of the buffer placeholder */
-        buffer[depth] = '\0';
+        buffer[depth+1] = '\0';
         fprintf(ofp, "key:  %s", secondPrefix);
-        fprintf(ofp, "%s\n", buffer);
+        fprintf(ofp, "%s", buffer);
+        fprintf(ofp, " --> ");
+        fprintf(ofp, "weight:  %d\n", pNode->weight);
 
     }
 
