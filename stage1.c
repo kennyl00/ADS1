@@ -24,29 +24,20 @@ int
 main(int argc, char *argv[]){
     struct node *pNode = NULL;
     char *word;
-    int weight=0;
+    int weight;
 
-    word = malloc(250*sizeof(char));
+    word = malloc(MAX*sizeof(char));
     if(word == NULL){
         printf("MALLOC FAIL\n");
         exit(EXIT_FAILURE);
 
     }
 
-    char string1[25] = "14608512;Shanghai, China";
-    char string2[32] = "13076300;Buenos Aires, Argentina";
-    char string3[22] = "12691836;Mumbai, India";
+    while(scanf("%d;%250[^\n]", &weight, word) != EOF){
+        pNode = insert(pNode, word, weight);
+    }
 
-    word = string1;
-    pNode = insert(pNode, word, weight);
-    word = string2;
-    pNode = insert(pNode, word, weight);
-    word = string3;
-    pNode = insert(pNode, word, weight);
-
-    printf("hello\n");
-
-    find_and_traverse(pNode, "Mum");
+    find_and_traverse(pNode, "Melb");
 
     return 0;
 }
@@ -66,6 +57,8 @@ struct node
     new->equal = NULL;
     new->right = NULL;
     new->data = *word;
+    new->end_of_key = FALSE;
+    new->weight = 0;
 
     return new;
 }
@@ -86,22 +79,21 @@ struct node
     }
 
     if(*word < pNode->data){
-        pNode->left = insert(pNode->left, word, weight);
+        pNode->left= insert(pNode->left, word, weight);
 
     }else if(*word == pNode->data){
-
         if(*(word+1) == '\0'){
-
             pNode->end_of_key = TRUE;
             pNode->weight = weight;
 
+
         }else {
-            pNode->equal = insert(pNode->equal, word+1, weight);
+            pNode->equal= insert(pNode->equal, word+1, weight);
 
         }
 
     }else {
-        pNode->right = insert(pNode->equal, word, weight);
+        pNode->right = insert(pNode->right, word, weight);
 
     }
 
