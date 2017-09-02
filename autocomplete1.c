@@ -6,6 +6,9 @@
 #define FALSE 0
 #define MAXCHAR 250
 
+/* global variable to keep track of the number of output keys */
+int key_found = 0;
+
 struct node {
     char data;
     int weight;
@@ -72,12 +75,17 @@ main(int argc, char *argv[]){
     fprintf(ofp, "Prefix:  %s\n", prefix);
     comparisons = find_and_traverse(pNode, prefix, ofp);
 
-    fclose(ifp);
-    fclose(ofp);
-
 /* stdout the number of comparisons done to find the key prefix */
     printf("Prefix:  %s found with %d char comparisons\n", prefix,
     comparisons);
+
+    if(!key_found){
+        fprintf(ofp, "NOTFOUND\n");
+
+    }
+
+    fclose(ifp);
+    fclose(ofp);
 
     return 0;
 }
@@ -90,7 +98,7 @@ struct node
     new = malloc(sizeof(struct node));
     if(new == NULL){
         printf("MALLOC FAILURE\n");
-        exit(1);
+        exit(EXIT_FAILURE);
 
     }
     new->left = NULL;
@@ -185,9 +193,11 @@ find_and_traverse(struct node *pNode, char *prefix, FILE *ofp){
             fprintf(ofp, "key:  %s%s --> weight:  %d\n", secondPrefix,
             buffer, pNode->weight);
 
+
         }
 
         traverse(pNode, secondPrefix, buffer, strlen(prefix), ofp);
+
     }
 
     return comparisons;
@@ -198,6 +208,8 @@ after the prefix */
 void
 traverse(struct node *pNode, char *secondPrefix, char *buffer, int depth,
     FILE *ofp){
+
+
 
     if(pNode == NULL){
         return;
@@ -210,6 +222,7 @@ traverse(struct node *pNode, char *secondPrefix, char *buffer, int depth,
     buffer[depth] = pNode->data;
 
     if(pNode->end_of_key == TRUE){
+        key_found++;
 
         /* since that new character that was added formed a word a new nul
         char is added at the end of the buffer placeholder */
