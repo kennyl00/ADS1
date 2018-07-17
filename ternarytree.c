@@ -2,8 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ternarytree.h"
+#include "linklist.h"
 
-/* Creating a new node while initialising its variables */
+/* Kenny Lee 801361 3/9/17 */
+
+/* Creating a ternary tree */
 struct node
 *new_node(char *word){
     struct node *new;
@@ -24,8 +27,6 @@ struct node
     return new;
 }
 
-/* Creating a ternary tree by moving each character left, right or down
-depending on its value */
 struct node
 *insert(struct node *pNode, char *word, int weight){
 
@@ -58,13 +59,14 @@ struct node
 
 /* finding the end of the prefix. If the flag is true, it's a
 word and it gets printed out */
-int
-find_and_traverse(struct node *pNode, char *prefix, FILE *ofp){
+struct link_list
+*find_and_traverse(struct node *pNode, char *prefix, FILE *ofp){
     char *buffer = NULL;
-    char *secondPrefix = prefix;
+    char *second_prefix = prefix;
     int comparisons = 0;
+    struct link_list *list = NULL;
 
-    buffer = malloc(250*sizeof(char));
+    buffer = malloc(MAXCHAR*sizeof(char));
     if(buffer == NULL){
         printf("MALLOC FAILURE\n");
         exit(EXIT_FAILURE);
@@ -100,11 +102,8 @@ find_and_traverse(struct node *pNode, char *prefix, FILE *ofp){
     if(pNode != NULL){
         if(pNode->end_of_key == TRUE){
 
-            /* buffer is a placeholder for the prefix, it adds an extra nul
-            char at the end for the next function*/
             buffer[strlen(prefix)+1] = '\0';
-            fprintf(ofp, "key:  %s%s --> weight:  %d\n", secondPrefix,
-            buffer, pNode->weight);
+            list = insert_link_list(list, buffer, pNode->weight);
 
 
         }
@@ -117,45 +116,44 @@ find_and_traverse(struct node *pNode, char *prefix, FILE *ofp){
         }
 
     }else{
-        traverse(pNode, secondPrefix, buffer, strlen(prefix), ofp);
+        list = traverse(pNode, second_prefix, buffer, strlen(prefix),
+        ofp, list);
 
     }
 
+    printf("Prefix:  %s found with %d char comparisons\n",
+    second_prefix, comparisons);
 
-
-    return comparisons;
+    return list;
 }
 
-/* moves through the tree and collects the characters that are
-after the prefix */
-void
-traverse(struct node *pNode, char *secondPrefix, char *buffer, int depth,
-    FILE *ofp){
+/* moves around the tree and prints out if it's a word */
+struct link_list
+*traverse(struct node *pNode, char *second_prefix, char *buffer,
+    int depth, FILE *ofp, struct link_list *list){
 
 
     if(pNode == NULL){
-        return;
+        return list;
 
     }
 
-    traverse(pNode->left, secondPrefix, buffer, depth, ofp);
+    list = traverse(pNode->left, second_prefix, buffer, depth, ofp,
+        list);
 
-    /* the nul char that was added before gets replaced by the new char */
     buffer[depth] = pNode->data;
 
     if(pNode->end_of_key == TRUE){
-
-
-        /* since that new character that was added formed a word a new nul
-        char is added at the end of the buffer placeholder */
         buffer[depth+1] = '\0';
-        fprintf(ofp, "key:  %s%s --> weight:  %d\n", secondPrefix,
-        buffer, pNode->weight);
+
+        list = insert_link_list(list, buffer, pNode->weight);
 
     }
 
-    traverse(pNode->equal, secondPrefix, buffer, depth+1, ofp);
-    traverse(pNode->right, secondPrefix, buffer, depth, ofp);
+    list = traverse(pNode->equal, second_prefix, buffer, depth+1, ofp,
+        list);
+    list = traverse(pNode->right, second_prefix, buffer, depth, ofp,
+        list);
 
-    return;
+    return list;
 }
